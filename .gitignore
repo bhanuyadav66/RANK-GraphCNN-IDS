@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+
+# Virtual Environment
+venv/
+.env/
+
+# Model files (optional)
+models/*.pth
+
+# Dataset (optional)
+data/*.csv
+
+# OS
+.DS_Store
+Thumbs.db
+venv/
+__pycache__/
+*.pyc
+data/*.csv
+models/*.pth
