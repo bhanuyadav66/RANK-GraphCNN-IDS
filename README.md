@@ -156,4 +156,3 @@ IDS prototyping demonstrations
 📜 License
 
 This project is for academic and research use only.
->>>>>>> 4cd91fc (Initial release: Graph-CNN based IDS with dashboard)
