@@ -8,8 +8,6 @@ Unlike traditional flow-based IDS approaches, RANK captures **relationships betw
 ## 📖 Project Motivation
 
 Conventional intrusion detection systems analyze network flows independently, which limits their ability to detect **complex, multi-step attacks** such as reconnaissance followed by exploitation.  
-This project addresses that limitation by:
-<<<<<<< HEAD
 
 - Representing alerts as **incident correlation graphs**
 - Learning structural attack patterns using **Graph Neural Networks**
