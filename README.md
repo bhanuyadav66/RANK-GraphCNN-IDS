@@ -54,7 +54,7 @@ This project introduces a **Graph-Based Intrusion Detection System (RANK)** that
 
 ## 🔄 Workflow
 
-![Workflow]()
+![Workflow](dashoard/workflow.png)
 
 ---
 
