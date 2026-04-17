@@ -1,156 +1,87 @@
-# 🔐 RANK: Graph-CNN Based Intrusion Detection System
+# 🔐 RANK: Graph-Based Intrusion Detection using Graph-CNN
 
-RANK is an **incident-level Intrusion Detection System (IDS)** that models network traffic as graphs and applies a **Graph Convolutional Neural Network (Graph-CNN)** to detect coordinated attack behavior.  
-Unlike traditional flow-based IDS approaches, RANK captures **relationships between alerts** using graph structures, improving detection of multi-stage and correlated attacks.
+🚀 A Graph Neural Network (GNN) based Intrusion Detection System that models network traffic as graphs and detects coordinated cyber-attacks using Graph Convolutional Networks (Graph-CNN).
 
 ---
 
-## 📖 Project Motivation
+## 📌 Project Overview
 
-Conventional intrusion detection systems analyze network flows independently, which limits their ability to detect **complex, multi-step attacks** such as reconnaissance followed by exploitation.  
+Traditional Intrusion Detection Systems (IDS) analyze network traffic as independent records, often missing correlated attack patterns.
 
-- Representing alerts as **incident correlation graphs**
-- Learning structural attack patterns using **Graph Neural Networks**
-- Providing **visual explanations** to support analyst interpretation
+This project introduces a **Graph-Based Intrusion Detection System (RANK)** that:
+- Represents network alerts as **graphs**
+- Captures relationships between alerts (IP, port, time)
+- Uses **Graph Convolutional Networks (GCN)** for classification
+- Detects **coordinated attacks at incident level**
+
+---
+
+## 🎯 Key Features
+
+- ✅ Graph-based anomaly detection
+- ✅ Incident-level attack classification (not just row-wise)
+- ✅ Interactive Streamlit dashboard
+- ✅ Real-time API-based prediction (FastAPI)
+- ✅ Graph visualization of network behavior
+- ✅ Attack vs Normal classification
+- ✅ Attack type interpretation (DoS, Exploits, etc.)
+
+---
+
+## 🧠 How It Works
+
+### Pipeline:
+
+1. Load network dataset (UNSW-NB15 / DARPA)
+2. Preprocess data (cleaning, encoding)
+3. Create sliding windows (incident grouping)
+4. Construct graph:
+   - Nodes → Alerts
+   - Edges → Shared IP / Port / Time
+5. Apply Graph-CNN model
+6. Predict:
+   - Attack / Normal
+   - Confidence score
+7. Visualize graph + explanation in dashboard
+
+---
 
 ## 🏗️ System Architecture
 
-<p align="center">
-  <img src="dashboard/Architecture diagram.png" width="750"/>
-</p>
-
-**Pipeline Overview:**
-
-1. Network traffic datasets (UNSW-NB15 / DARPA) are preprocessed
-2. Alerts are grouped into sliding windows
-3. Incident graphs are constructed using shared IP, port, and time correlations
-4. A Graph-CNN classifies each incident as **Attack** or **Normal**
-5. Results are served through a **FastAPI backend**
-6. A **Streamlit dashboard** visualizes predictions and correlation graphs
+![Architecture](dashboard/Architecture%20diagram.png)
 
 ---
 
-## 🧠 Graph-CNN Model Design
+## 🔄 Workflow
 
-<p align="center">
-  <img src="dashboard\Graph flowchart.png" width="450"/>
-</p>
-
-**Model Components:**
-
-- Two GCN layers with ReLU activation
-- Global pooling for graph-level embedding
-- Fully connected classification head
-- Binary output: `Attack` / `Normal`
-
-The model is implemented using **PyTorch Geometric**.
+![Workflow](dashboard/Flowchart.png)
 
 ---
 
-## 📊 Datasets Used
+## 🕸️ Graph Representation
 
-| Dataset | Description |
-|------|------------|
-| UNSW-NB15 | Modern synthetic intrusion dataset |
-| DARPA | Benchmark intrusion detection dataset |
-
-Preprocessed CSV files are stored in the `data/` directory.
+![Graph Representation](dashboard/Graph%20flowchart.png)
 
 ---
 
-## 🚀 How to Run the Project
+## 📊 Dashboard Output
 
-### 1️⃣ Create Virtual Environment
-```bash
-python -m venv venv
-venv\Scripts\activate
-```
-2️⃣ Install Dependencies
-```bash
-pip install -r requirements.txt
-```
-3️⃣ Preprocess Dataset
-```bash
-python preprocessing/prepare_features.py
-```
-4️⃣ Train Graph-CNN
-```bash
-python -m training.train_graphcnn
-```
-5️⃣ Start Backend API
-```bash
-uvicorn backend.app:app --host 0.0.0.0 --port 8000
-```
-6️⃣ Launch Dashboard
-```bash
-streamlit run ui/streamlit_app.py
-```
-Open browser at:
-👉 http://localhost:8501
+![Output](dashboard/output.png)
 
-🖥️ Streamlit Dashboard
-<p align="center"> <img src="dashboard\output.png" width="750"/> </p>
-Dashboard Features:
+---
 
-One-click IDS inference
+## 🛠️ Tech Stack
 
-Incident-level confidence score
+| Category        | Technology |
+|----------------|-----------|
+| Programming    | Python |
+| ML Framework   | PyTorch |
+| Graph ML       | PyTorch Geometric |
+| Backend API    | FastAPI |
+| Frontend       | Streamlit |
+| Visualization  | PyVis |
+| Data Handling  | Pandas, NumPy |
 
-Interactive correlation graph
+---
 
-Graph-based explanation panel
-
-🔍 Graph Visualization Explanation
-🔴 Red Nodes → Alerts contributing strongly to attack prediction
-
-🔵 Blue Nodes → Normal or low-risk alerts
-
-Dense connectivity indicates coordinated attack behavior
-
-📈 Experimental Results
-
-Metric	Value
-Accuracy	98.8%
-Precision	0.99
-Recall	1.00
-F1-Score	0.99
-
-Results demonstrate strong performance on incident-level detection.
-
-🧪 Technologies Used
-
-Python 3.9
-PyTorch
-PyTorch Geometric
-FastAPI
-Streamlit
-NetworkX
-PyVis
-Scikit-learn
-
-📂 Project Structure
-
-RANK-GraphCNN/
-│
-├── backend/          # FastAPI server
-├── preprocessing/    # Feature extraction scripts
-├── graph/            # Graph construction logic
-├── models/           # Graph-CNN model
-├── training/         # Training and evaluation
-├── ui/               # Streamlit dashboard
-├── data/             # Datasets (ignored in Git)
-├── notebooks/        # Research notebooks
-├── dashboard/             # Architecture & result images
-└── README.md
-
-🎓 Academic Context
-
-This project was developed as a Final Year B.Tech Computer Science project
-and is suitable for:
-Academic evaluation
-Research publication
-IDS prototyping demonstrations
-
-📜 License
-
-This project is for academic and research use only.
+## 📂 Project Structure
