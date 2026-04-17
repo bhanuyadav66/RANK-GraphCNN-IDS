@@ -1,160 +1,239 @@
 import streamlit as st
 import requests
 import streamlit.components.v1 as components
-import pandas as pd
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from graph.graph_builder import build_graph_from_window
 from ui.graph_viz import visualize_graph_pyg
 
 # =====================================================
-# Configuration
+# CONFIG
 # =====================================================
 API_URL = "http://localhost:8000/predict/sample"
-DATA_PATH = "data/processed_data.csv"
 
 st.set_page_config(
     page_title="RANK Graph-CNN IDS",
-    layout="centered"
+    layout="wide",
+)
+
+st.markdown(
+    """
+<style>
+html, body, [class*="css"] {
+    font-size: 17px;
+}
+
+.main .block-container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+h1 {
+    font-size: 2.2rem !important;
+    line-height: 1.2 !important;
+}
+
+h2, h3 {
+    font-size: 1.45rem !important;
+    line-height: 1.3 !important;
+}
+
+p, li, div[data-testid="stMarkdownContainer"] p {
+    font-size: 1rem !important;
+    line-height: 1.6 !important;
+}
+
+[data-testid="stMetric"] {
+    padding: 0.85rem 1rem;
+}
+
+[data-testid="stMetricValue"] {
+    font-size: 1.9rem !important;
+    line-height: 1.2 !important;
+}
+
+[data-testid="stMetricLabel"] {
+    font-size: 1rem !important;
+}
+
+[data-testid="stCaptionContainer"] {
+    font-size: 0.98rem !important;
+    line-height: 1.55 !important;
+}
+
+button {
+    font-size: 1rem !important;
+}
+
+.graph-note {
+    margin-top: 0.9rem;
+    padding: 0.95rem 1rem;
+    background: rgba(49, 51, 63, 0.06);
+    border-radius: 0.6rem;
+    font-size: 1rem;
+    line-height: 1.65;
+}
+
+.graph-note strong {
+    font-size: 1rem;
+}
+</style>
+""",
+    unsafe_allow_html=True,
 )
 
 # =====================================================
-# Session State Initialization
+# SESSION STATE
 # =====================================================
-for key in ["prediction", "confidence", "nodes", "edges", "density", "graph_html"]:
-    if key not in st.session_state:
-        st.session_state[key] = None
+if "prediction" not in st.session_state:
+    st.session_state.prediction = None
+    st.session_state.confidence = None
+    st.session_state.nodes = None
+    st.session_state.edges = None
+    st.session_state.density = None
+    st.session_state.attack_type = None
+
 
 # =====================================================
-# Cache: Load Graph ONCE (heavy operation)
+# LOAD GRAPH (ONCE)
 # =====================================================
 @st.cache_resource
 def load_sample_graph_once():
-    df = pd.read_csv(DATA_PATH)
-    window = df.iloc[:100]  # one incident-sized window
-    graph = build_graph_from_window(window)
-    return graph
+    import pandas as pd
 
-# =====================================================
-# Cache: Build Graph HTML (label-aware)
-# IMPORTANT: leading underscore avoids hashing PyG graph
-# =====================================================
+    df = pd.read_csv("data/processed_data.csv")
+    window = df.iloc[:100]
+    return build_graph_from_window(window)
+
+
 @st.cache_resource
-def load_graph_html(_graph, label):
-    html_path, avg_degree = visualize_graph_pyg(_graph, label)
+def load_graph_html(_graph):
+    html_path, avg_degree = visualize_graph_pyg(_graph, "Attack")
     with open(html_path, "r", encoding="utf-8") as f:
         html = f.read()
     return html, avg_degree
 
-# =====================================================
-# Preload graph ONCE
-# =====================================================
+
 sample_graph = load_sample_graph_once()
+graph_html, avg_degree = load_graph_html(sample_graph)
 
 # =====================================================
-# UI Header
+# HEADER
 # =====================================================
-st.title("🔐 RANK: Graph-CNN Intrusion Detection System")
+st.title("RANK: Graph-CNN Intrusion Detection System")
 
-st.markdown("""
+st.markdown(
+    """
 This demo shows **incident-level intrusion detection**
 using a **Graph Convolutional Neural Network (Graph-CNN)**.
-""")
-
-st.caption(
-    "ℹ️ Graph construction and visualization are precomputed for demo stability. "
-    "Model inference itself runs in near real-time."
+"""
 )
 
+st.caption("Inference runs in near real-time using a preloaded Graph-CNN model.")
+
 # =====================================================
-# Run IDS Button (FAST)
+# SIDEBAR BUTTON
 # =====================================================
-if st.button("Run IDS on Sample Incident"):
-    with st.spinner("Running Graph-CNN IDS inference..."):
-        response = requests.get(API_URL)
+if st.sidebar.button("Run IDS on Sample Incident"):
+    try:
+        with st.spinner("Running Graph-CNN IDS inference..."):
+            response = requests.get(API_URL, timeout=5)
 
-    if response.status_code == 200:
-        data = response.json()
+        if response.status_code == 200:
+            data = response.json()
 
-        st.session_state.prediction = data["prediction"]
-        st.session_state.confidence = data["confidence"]
-        st.session_state.nodes = data["nodes"]
-        st.session_state.edges = data["edges"]
+            st.session_state.prediction = data["prediction"]
+            st.session_state.confidence = data["confidence"]
+            st.session_state.nodes = data["nodes"]
+            st.session_state.edges = data["edges"]
+            st.session_state.attack_type = data.get("attack_type", "Unknown")
 
-        st.session_state.density = round(
-            (2 * data["edges"]) / (data["nodes"] * (data["nodes"] - 1)),
-            3
-        )
+            if data["nodes"] > 1:
+                st.session_state.density = round(
+                    (2 * data["edges"]) / (data["nodes"] * (data["nodes"] - 1)),
+                    3,
+                )
+            else:
+                st.session_state.density = 0.0
+        else:
+            st.error("Failed to contact backend")
 
-        # Build graph visualization ONCE per prediction
-        graph_html, _ = load_graph_html(sample_graph, st.session_state.prediction)
-        st.session_state.graph_html = graph_html
+    except Exception:
+        st.error("Backend not running on port 8000")
 
+# =====================================================
+# OUTPUT
+# =====================================================
+if st.session_state.prediction:
+    if st.session_state.prediction == "Attack":
+        st.error("High Risk Attack Detected", icon="🚨")
     else:
-        st.error("❌ Failed to contact IDS API")
+        st.success("Normal Traffic", icon="✅")
 
-# =====================================================
-# Prediction Output
-# =====================================================
-if st.session_state.prediction is not None:
+    st.info(f"Prediction: {st.session_state.prediction}")
 
-    st.success(f"Prediction: **{st.session_state.prediction}**")
+    confidence_pct = min(st.session_state.confidence * 100, 99.9)
 
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Confidence", f"{st.session_state.confidence:.2f}")
+    col1, col2, col3, col4 = st.columns([1, 1, 1.4, 1])
+    col1.metric("Confidence", f"{confidence_pct:.1f}%")
     col2.metric("Nodes", st.session_state.nodes)
     col3.metric("Edges", st.session_state.edges)
+    col4.metric("Attack Type", st.session_state.attack_type)
+    st.caption("Attack type is inferred from dataset labels and not directly predicted by the model.")
+
+    if st.session_state.prediction == "Attack":
+        density_text = "Highly connected structure suggests coordinated attack behavior."
+    else:
+        density_text = "Low connectivity suggests normal background traffic."
+
+    st.caption(
+        f"Graph Density: {st.session_state.density} | {density_text}"
+    )
 
     st.markdown("---")
-    st.subheader("🛡 IDS Interpretation")
 
-    if st.session_state.prediction == "Attack":
-        st.write("⚠️ Suspicious correlated activity detected.")
-    else:
-        st.write("✅ Behavior consistent with normal network traffic.")
+    left_col, right_col = st.columns([0.95, 1.25], gap="large")
 
-# =====================================================
-# Graph Visualization (INSTANT)
-# =====================================================
-st.markdown("---")
-st.subheader("🕸️ Incident Correlation Graph")
+    with left_col:
+        st.subheader("IDS Interpretation")
 
-if st.session_state.graph_html:
-    components.html(st.session_state.graph_html, height=550, scrolling=True)
+        if st.session_state.prediction == "Attack":
+            st.write(
+                "Multiple highly correlated alerts detected, indicating coordinated malicious activity."
+            )
+        else:
+            st.write("Behavior is consistent with normal background traffic.")
 
-    st.markdown("""
-**Node Color Legend**
-- 🔴 **Red nodes**: Attack-related or highly correlated alerts  
-- 🔵 **Blue nodes**: Normal background traffic  
-Edges indicate shared attributes such as IP, port, or temporal proximity.
-""")
-else:
-    st.info("Click **Run IDS on Sample Incident** to visualize the incident graph.")
-
-# =====================================================
-# Auto-generated Explanation
-# =====================================================
-if st.session_state.prediction is not None:
-
-    st.markdown("###  Graph-based Explanation")
-
-    if st.session_state.prediction == "Attack":
-        explanation = (
-            f"The incident graph contains **{st.session_state.nodes} alerts** "
-            f"with **high interconnectivity** (density = {st.session_state.density}). "
-            f"Several highly connected red nodes indicate coordinated activity, "
-            f"which the Graph-CNN has learned to associate with attack behavior."
+    with right_col:
+        st.subheader("Incident Correlation Graph")
+        components.html(graph_html, height=560, scrolling=True)
+        st.markdown(
+            """
+            <div class="graph-note">
+                <strong>Red</strong> = suspicious nodes |
+                <strong>Blue</strong> = normal traffic<br>
+                Node colors are heuristic visual cues based on graph connectivity, not per-node model predictions.
+                Edges indicate shared attributes such as IP, port, or temporal proximity.
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
-    else:
-        explanation = (
-            f"The incident graph shows **low connectivity** "
-            f"(density = {st.session_state.density}), indicating mostly independent alerts. "
-            f"This pattern is consistent with normal network behavior."
-        )
+
+    st.markdown("### Graph-based Explanation")
+
+    explanation = (
+        f"The incident graph contains **{st.session_state.nodes} alerts** "
+        f"with density = {st.session_state.density} and average node degree of {avg_degree:.2f}. "
+        f"Highly connected nodes indicate correlated activity, which the Graph-CNN associates with attack behavior."
+    )
 
     st.write(explanation)
 
 # =====================================================
-# Footer
+# FOOTER
 # =====================================================
 st.markdown("---")
 st.caption("RANK Graph-CNN IDS | Final Year Project Demo")

@@ -1,58 +1,56 @@
+import os
+from pathlib import Path
+import tempfile
+
 import networkx as nx
 from pyvis.network import Network
-import tempfile
-import os
 
 
-def visualize_graph_pyg(data, prediction_label):
-    """
-    Visualize a PyG graph with node coloring based on connectivity.
-    High-degree nodes = attack-dominant (red)
-    Low-degree nodes = normal (blue)
-    """
-
+def visualize_graph_pyg(data, prediction):
     G = nx.Graph()
-    edge_index = data.edge_index.t().tolist()
 
-    # Add nodes
-    for i in range(data.x.shape[0]):
-        G.add_node(i)
+    num_nodes = int(getattr(data, "num_nodes", 0) or 0)
+    if num_nodes:
+        G.add_nodes_from(range(num_nodes))
 
-    # Add edges
-    for src, dst in edge_index:
-        G.add_edge(src, dst)
-
-    # Degree-based coloring
-    degrees = dict(G.degree())
-    avg_degree = sum(degrees.values()) / len(degrees)
+    edges = data.edge_index.t().tolist()
+    G.add_edges_from(edges)
 
     net = Network(
         height="500px",
         width="100%",
-        bgcolor="#0e1117",
-        font_color="white"
+        bgcolor="#111",
+        font_color="white",
+        notebook=False,
+        cdn_resources="in_line",
     )
 
-    for node, degree in degrees.items():
-        if prediction_label == "Attack" and degree >= avg_degree:
-            color = "#ff4b4b"   # 🔴 attack-related
+    degrees = dict(G.degree())
+    avg_degree = (sum(degrees.values()) / len(degrees)) if degrees else 0
+
+    for node in G.nodes():
+        degree = degrees.get(node, 0)
+
+        if prediction == "Attack" and degree >= avg_degree:
+            color = "#ff4b4b"
+            size = 13
+            title = f"Alert {node}: high-correlation node (degree={degree})"
         else:
-            color = "#4da6ff"   # 🔵 normal-related
+            color = "#4da6ff"
+            size = 8
+            title = f"Alert {node}: background node (degree={degree})"
 
-        net.add_node(
-            node,
-            label=f"Alert {node}",
-            color=color,
-            size=8 + (degree * 0.3)
-        )
+        net.add_node(node, color=color, size=size, title=title)
 
-    for src, dst in G.edges():
-        net.add_edge(src, dst, color="#888888")
+    net.add_edges(list(G.edges()))
+    net.force_atlas_2based(gravity=-45)
 
-    net.force_atlas_2based()
+    fd, html_path = tempfile.mkstemp(suffix=".html")
+    os.close(fd)
+    Path(html_path).unlink(missing_ok=True)
 
-    tmp_dir = tempfile.gettempdir()
-    html_path = os.path.join(tmp_dir, "incident_graph.html")
-    net.save_graph(html_path)
+    html_content = net.generate_html(notebook=False)
+    with open(html_path, "w", encoding="utf-8") as html_file:
+        html_file.write(html_content)
 
     return html_path, avg_degree
