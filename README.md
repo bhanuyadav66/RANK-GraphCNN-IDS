@@ -48,7 +48,7 @@ This project introduces a **Graph-Based Intrusion Detection System (RANK)** that
 
 ## 🏗️ System Architecture
 
-![Architecture]()
+![Architecture](https://github.com/bhanuyadav66/RANK-GraphCNN-IDS/blob/main/dashoard/system%20architecture.png)
 
 ---
 
