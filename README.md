@@ -88,12 +88,12 @@ This project introduces a **Graph-Based Intrusion Detection System (RANK)** that
 
 RANK-GraphCNN/
 
-│
+
 ├── backend/
 
 │ └── app.py # FastAPI backend
 
-│
+
 ├── dashboard/
 
 │ ├── streamlit_app.py # UI dashboard
@@ -106,24 +106,24 @@ RANK-GraphCNN/
 
 │ └── output.png
 
-│
+
 ├── graph/
 │ └── graph_builder.py # Graph creation logic
 
-│
+
 ├── model/
 │ └── graph_model.py # Graph-CNN model
 
-│
+
 ├── data/
 │ └── processed_data.csv # Dataset
 
-│
+
 ├── notebooks/
 
 │ └── research_notebook.ipynb
 
-│
+
 ├── requirements.txt
 
 └── README.md
