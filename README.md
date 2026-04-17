@@ -54,13 +54,13 @@ This project introduces a **Graph-Based Intrusion Detection System (RANK)** that
 
 ## 🔄 Workflow
 
-![Workflow](dashoard/graph_representation.png)
+![Workflow]()
 
 ---
 
 ## 🕸️ Graph Representation
 
-![Graph Representation](dashboard/Graph%20flowchart.png)
+![Graph Representation](dashoard/graph_representation.png)
 
 ---
 
