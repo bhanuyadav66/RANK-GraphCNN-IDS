@@ -66,7 +66,7 @@ This project introduces a **Graph-Based Intrusion Detection System (RANK)** that
 
 ## 📊 Dashboard Output
 
-![Output](dashboard/output.png)
+![Output](dashoard/dashborad.png)
 
 ---
 
