@@ -85,3 +85,106 @@ This project introduces a **Graph-Based Intrusion Detection System (RANK)** that
 ---
 
 ## 📂 Project Structure
+
+RANK-GraphCNN/
+│
+├── backend/
+│ └── app.py # FastAPI backend
+│
+├── dashboard/
+│ ├── streamlit_app.py # UI dashboard
+│ ├── Architecture diagram.png
+│ ├── Flowchart.png
+│ ├── Graph flowchart.png
+│ └── output.png
+│
+├── graph/
+│ └── graph_builder.py # Graph creation logic
+│
+├── model/
+│ └── graph_model.py # Graph-CNN model
+│
+├── data/
+│ └── processed_data.csv # Dataset
+│
+├── notebooks/
+│ └── research_notebook.ipynb
+│
+├── requirements.txt
+└── README.md
+---
+
+
+---
+
+## ⚙️ Installation & Setup
+
+### 1️⃣ Clone Repository
+
+```bash
+git clone https://github.com/bhanuyadav66/RANK-GraphCNN-IDS.git
+cd RANK-GraphCNN-IDS
+```
+
+### 2️⃣ Create Virtual Environment
+python -m venv venv
+venv\Scripts\activate
+
+3️⃣ Install Dependencies
+pip install -r requirements.txt
+🚀 Running the Project
+▶️ Start Backend (FastAPI)
+uvicorn backend.app:app --reload
+
+👉 Runs at: http://localhost:8000
+
+▶️ Start Dashboard (Streamlit)
+streamlit run ui/streamlit_app.py
+
+👉 Runs at: http://localhost:8501
+
+▶️ Run Demo
+Open dashboard
+Click "Run IDS on Sample Incident"
+View:
+  Prediction
+  Graph visualization
+  Explanation
+
+📈 Model Output
+Prediction: Attack / Normal
+Confidence Score: Probability of prediction
+Graph Metrics: Nodes, Edges, Density
+Attack Type: Derived from dataset labels
+
+⚠️ Important Note
+
+The Graph-CNN model performs binary classification (Attack vs Normal).
+Attack type labels (DoS, Exploit, etc.) are derived from dataset categories for interpretability.
+
+📊 Dataset Used
+UNSW-NB15 Dataset
+DARPA Intrusion Detection Dataset
+
+📌 Applications
+Network Security Monitoring
+Enterprise Threat Detection
+SOC (Security Operations Center)
+Cyber Attack Analysis
+
+🔮 Future Improvements
+Multi-class attack classification
+Real-time streaming IDS
+Explainable AI (XAI) integration
+Deployment on cloud (AWS/GCP)
+Integration with SIEM tools
+
+👨‍💻 Author
+
+Allam Bhanu Yadav
+Final Year CSE Student
+Specialization: AI / ML / Data Science
+
+📜 License
+
+This project is for academic and research purposes.
